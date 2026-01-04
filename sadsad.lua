@@ -1,22 +1,30 @@
---[[ 
-Fz Hub v2 GUI для Roblox
-Все LocalScript встроены прямо здесь.
-Создай этот скрипт как LocalScript внутри StarterGui или ScreenGui
---]]
-
+--=== Fz Hub v2 for Roblox ===--
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local TeleportService = game:GetService("TeleportService")
 local StarterGui = game:GetService("StarterGui")
+
 local player = Players.LocalPlayer
+repeat task.wait() until player:FindFirstChild("PlayerGui")
+local playerGui = player.PlayerGui
 
 --=== ScreenGui ===--
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FzHub"
-screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Parent = playerGui
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.ResetOnSpawn = false
+
+--=== Open Button ===--
+local openButton = Instance.new("ImageButton")
+openButton.Name = "OpenButton"
+openButton.Parent = screenGui
+openButton.Size = UDim2.new(0,85,0,81)
+openButton.Position = UDim2.new(0.01,0,0.43,0)
+openButton.Image = "rbxassetid://132782852102479"
+openButton.BackgroundTransparency = 1
+openButton.Visible = true
 
 --=== Main Frame ===--
 local mainFrame = Instance.new("Frame")
@@ -42,7 +50,31 @@ title.Text = "Fz Hub v2"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.TextSize = 23
 
---=== Buttons ===--
+--=== Minimize Button ===--
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Name = "MinimizeButton"
+minimizeBtn.Parent = mainFrame
+minimizeBtn.Size = UDim2.new(0,33,0,31)
+minimizeBtn.Position = UDim2.new(0.92,0,0,0)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(45,47,74)
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+minimizeBtn.TextSize = 37
+local cornerMin = Instance.new("UICorner")
+cornerMin.Parent = minimizeBtn
+
+-- Open/Close GUI logic
+openButton.MouseButton1Click:Connect(function()
+	mainFrame.Visible = true
+	openButton.Visible = false
+end)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = false
+	openButton.Visible = true
+end)
+
+--=== Utility function to create buttons ===--
 local function createButton(name, parent, position, size, text, color)
 	local btn = Instance.new("TextButton")
 	btn.Name = name
@@ -60,11 +92,7 @@ local function createButton(name, parent, position, size, text, color)
 	return btn
 end
 
-local farmKillsBtn = createButton("FarmKillsButton", mainFrame, UDim2.new(0,0,0.066,0), UDim2.new(0,203,0,33), "Farm Kills", Color3.fromRGB(34,37,80))
-local infoBtn = createButton("InfoButton", mainFrame, UDim2.new(0.5,0,0.066,0), UDim2.new(0,208,0,33), "Information", Color3.fromRGB(34,37,80))
-local minimizeBtn = createButton("MinimizeButton", mainFrame, UDim2.new(0.92,0,0,0), UDim2.new(0,33,0,31), "-", Color3.fromRGB(45,47,74))
-minimizeBtn.TextSize = 37
-
+--=== Buttons ===--
 local autoResetBtn = createButton("AutoResetButton", mainFrame, UDim2.new(0.107,0,0.466,0), UDim2.new(0,329,0,31), "AutoReset: OFF", Color3.fromRGB(96,46,158))
 local setSpawnBtn = createButton("SetSpawnButton", mainFrame, UDim2.new(0.105,0,0.543,0), UDim2.new(0,329,0,31), "Set Spawn", Color3.fromRGB(96,46,158))
 local optimizationBtn = createButton("OptimizationButton", mainFrame, UDim2.new(0.105,0,0.702,0), UDim2.new(0,329,0,31), "Optimization", Color3.fromRGB(96,46,158))
@@ -72,48 +100,7 @@ local rejoinBtn = createButton("RejoinButton", mainFrame, UDim2.new(0.103,0,0.78
 local tpBtn = createButton("TpButton", mainFrame, UDim2.new(0.104,0,0.624,0), UDim2.new(0,329,0,31), "Teleport", Color3.fromRGB(96,46,158))
 local autoClaimBtn = createButton("AutoClaimButton", mainFrame, UDim2.new(0.105,0,0.867,0), UDim2.new(0,329,0,31), "AutoClaim Emote", Color3.fromRGB(96,46,158))
 
---=== Info Frame ===--
-local infoFrame = Instance.new("Frame")
-infoFrame.Name = "InformationFrame"
-infoFrame.Parent = mainFrame
-infoFrame.BackgroundColor3 = Color3.fromRGB(23,21,31)
-infoFrame.BorderSizePixel = 0
-infoFrame.Position = UDim2.new(0,0,0.166,0)
-infoFrame.Size = UDim2.new(0,418,0,398)
-infoFrame.Visible = false
-local infoCorner = Instance.new("UICorner")
-infoCorner.Parent = infoFrame
-
-local function createInfoText(text, position, size)
-	local label = Instance.new("TextLabel")
-	label.Parent = infoFrame
-	label.BackgroundTransparency = 1
-	label.Position = position
-	label.Size = size
-	label.Font = Enum.Font.SourceSansBold
-	label.Text = text
-	label.TextColor3 = Color3.fromRGB(255,255,255)
-	label.TextSize = 21
-	label.TextWrapped = true
-	return label
-end
-
-createInfoText("Fz Hub v2", UDim2.new(0.194,0,0.054,0), UDim2.new(0,93,0,20))
-createInfoText("Status: 🟢", UDim2.new(0.194,0,0.124,0), UDim2.new(0,101,0,12))
-createInfoText("Nothing to put here lol hi pc users", UDim2.new(0.252,0,0.483,0), UDim2.new(0,207,0,63))
-
---=== Toggle Info Button ===--
-infoBtn.MouseButton1Click:Connect(function()
-	infoFrame.Visible = not infoFrame.Visible
-end)
-
---=== Minimize Button ===--
-minimizeBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = true
-	screenGui:WaitForChild("ImageButton").Visible = true
-end)
-
---=== AutoReset Button ===--
+--=== AutoReset logic ===--
 do
 	local autoResetEnabled = false
 	local stuckPos, loopConn, healthConn, charAddedConn
@@ -150,7 +137,7 @@ do
 		end
 	end
 
-	local function toggleAutoReset()
+	autoResetBtn.MouseButton1Click:Connect(function()
 		autoResetEnabled = not autoResetEnabled
 		if autoResetEnabled then
 			autoResetBtn.Text = "AutoReset: ON"
@@ -198,24 +185,13 @@ do
 			stopStuckLoop()
 			unfreezeCharacter(player.Character)
 		end
-	end
-
-	autoResetBtn.MouseButton1Click:Connect(toggleAutoReset)
+	end)
 end
 
---=== SetSpawn Button ===--
+--=== SetSpawn logic ===--
 do
 	local enabled = false
 	local pos, loopConn
-
-	local function startLoop()
-		if loopConn then loopConn:Disconnect() end
-		loopConn = RunService.Heartbeat:Connect(function()
-			if player.Character and pos then
-				player.Character:MoveTo(pos)
-			end
-		end)
-	end
 
 	setSpawnBtn.MouseButton1Click:Connect(function()
 		enabled = not enabled
@@ -223,7 +199,12 @@ do
 			local char = player.Character
 			if char and char:FindFirstChild("HumanoidRootPart") then
 				pos = char.HumanoidRootPart.Position
-				startLoop()
+				if loopConn then loopConn:Disconnect() end
+				loopConn = RunService.Heartbeat:Connect(function()
+					if player.Character and pos then
+						player.Character:MoveTo(pos)
+					end
+				end)
 			end
 			setSpawnBtn.Text = "Spawn Set"
 		else
@@ -234,7 +215,7 @@ do
 	end)
 end
 
---=== Optimization Button ===--
+--=== Optimization ===--
 optimizationBtn.MouseButton1Click:Connect(function()
 	local map = workspace:FindFirstChild("Map")
 	if map then
@@ -252,17 +233,17 @@ optimizationBtn.MouseButton1Click:Connect(function()
 
 	StarterGui:SetCore("SendNotification", {
 		Title = "SYSTEM SAYS:",
-		Text = "Successfully made your game smoother!",
+		Text = "Successfully optimized your game!",
 		Duration = 4
 	})
 end)
 
---=== Rejoin Button ===--
+--=== Rejoin ===--
 rejoinBtn.MouseButton1Click:Connect(function()
 	TeleportService:Teleport(game.PlaceId, player)
 end)
 
---=== Teleport Button ===--
+--=== Teleport ===--
 tpBtn.MouseButton1Click:Connect(function()
 	local targetPos = Vector3.new(-139,440,-391)
 	local char = player.Character or player.CharacterAdded:Wait()
@@ -270,7 +251,7 @@ tpBtn.MouseButton1Click:Connect(function()
 	root.CFrame = CFrame.new(targetPos)
 end)
 
---=== AutoClaim Button ===--
+--=== AutoClaim ===--
 autoClaimBtn.MouseButton1Click:Connect(function()
 	local playerGui = player:FindFirstChild("PlayerGui")
 	if not playerGui then return end
