@@ -109,7 +109,7 @@ end)
 
 --=== Minimize Button ===--
 minimizeBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = false
+	mainFrame.Visible = true
 	screenGui:WaitForChild("ImageButton").Visible = true
 end)
 
